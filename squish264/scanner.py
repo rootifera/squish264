@@ -1,3 +1,5 @@
+# squish264/scanner.py
+
 import os
 
 from squish264.config import VIDEO_EXTENSIONS, OUTPUT_FOLDER_NAME
@@ -5,9 +7,24 @@ from squish264.db import add_file
 from squish264.utils import is_video_file, log
 
 
+def should_ignore(dirpath):
+    ignore_markers = ["ignore.txt", ".ignore"]
+    for marker in ignore_markers:
+        if os.path.exists(os.path.join(dirpath, marker)):
+            log(f"Skipping folder (ignore marker found): {dirpath}", "WARN")
+            return True
+    return False
+
+
 def scan_folder(root_path):
     scanned_files = 0
-    for dirpath, _, filenames in os.walk(root_path):
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        if OUTPUT_FOLDER_NAME in dirpath.split(os.sep):
+            continue
+
+        if should_ignore(dirpath):
+            continue
+
         video_files = [f for f in filenames if is_video_file(f, VIDEO_EXTENSIONS)]
         if not video_files:
             continue
