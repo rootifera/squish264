@@ -99,3 +99,13 @@ def test_encoder_available(encoder: str) -> bool:
         return result.returncode == 0
     except Exception:
         return False
+
+
+def maybe_cleanup_database():
+    from squish264.db import get_files_by_status
+    remaining = get_files_by_status("found") + get_files_by_status("processing")
+    if not remaining:
+        db_path = os.path.join(os.path.dirname(__file__), "../squish264.db")
+        if os.path.exists(db_path):
+            os.remove(db_path)
+            log("All files converted! Database removed.", "OK")
